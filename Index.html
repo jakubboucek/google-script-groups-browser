@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.socialbakers.com/itsupport/static/google-groups-directory-v2/loader.css">
+    <style>
+      body {
+        background-color: #eee;
+        background-repeat: no-repeat;
+        font-family: 'Roboto Condensed', Arial, Helvetica, sans-serif;
+        color: #333;
+        margin: 10px;
+      }
+      body, .h1, h1  {
+        font-weight: 400;
+      }
+      .h2, .h3, .h4, .h5, .h6, h2, h3, h4, h5, h6, th {
+        font-weight: 700;
+      }
+      #page {
+        max-width: 500px;
+        margin: 10px auto 5px;
+        border: 1px solid #888;
+        background-color: white;
+        border-radius: 5px;
+        padding: 15px 15px 0;
+        box-shadow: 0 0 15px -5px black;
+      }
+      .logo {
+        text-align: center;
+      }
+      h1 {
+        margin-top: 0;
+        text-align: center;
+      }
+      .ask {
+        text-align: center;
+      }
+      .footer {
+        font-size: small;
+        text-align: center;
+        max-width: 500px;
+        margin: 0 auto 30px;
+        color: gray;
+      }
+      p {
+        padding-top: 0.8em;
+      }
+      .form-control, .btn {
+        transition: background-color 0.3s, opacity 0.3s, background-position 0.3s;
+      }
+      .alert {
+        margin-top: 20px;
+        margin-bottom: 0;
+      }
+      .info-box .table>tbody>tr:first-child>th, .info-box .table>tbody>tr:first-child>td {
+        border-top: none;
+      }
+      .info-box .table {
+        margin-bottom: 0;
+      }
+      .hidden-on-start, .template-child {
+        display: none;
+      }
+      .icon span {
+        width: 20px;
+        height: 20px;
+        display: block;
+        background-repeat: no-repeat;
+        background-size: contain;
+      }
+      .type-user .icon span {
+        background-image: url(https://cdn.socialbakers.com/itsupport/static/google-groups-directory-v2/user.svg);
+      }
+      .type-group th, .type-group td {
+        background-color: #f5f5f5;
+      }
+      .type-group .icon span {
+        background-image: url(https://cdn.socialbakers.com/itsupport/static/google-groups-directory-v2/group.svg);
+      }
+      .type-domain th, .type-domain td {
+        background-color: #f2dede;
+      }
+      .type-domain .icon span {
+        background-image: url(https://cdn.socialbakers.com/itsupport/static/google-groups-directory-v2/domain.svg);
+      }
+      .role span {
+        display: inline-block;
+        border: 1px solid transparent;
+        padding: 0 4px;
+        font-size: .9em;
+        border-radius: 4px;
+        font-weight: 100;
+      }
+      .role-member .role span {
+        border-color: #ccc;
+      }
+      .role-manager .role span {
+        background-color: #5bc0de;
+        color: #fff;
+      }
+      .role-owner .role span {
+        background-color: #286090;
+        color: #fff;
+      }
+      .status-disabled th, .status-disabled td {
+        opacity: .5;
+      }
+      .status-disabled .icon {
+        opacity: .3;
+      }
+      .status-disabled .email {
+        text-decoration: line-through;
+      }
+      .list-box .its-me th, .list-box .its-me td {
+        background-color: #fcf8e3;
+      }
+    </style>
+    <script>window.dataLayer = dataLayer = [{'gtm.start':new Date().getTime(),event:'gtm.js'}];</script>
+    <script src="https://www.googletagmanager.com/gtm.js?id=GTM-XXXXXX" async></script>
+    <script>
+      APP_URL = null;
+      var KEY_ENTER = 13;
+      var TYPE_USER = "user";
+      var TYPE_GROUP = "group";
+      var TYPE_DOMAIN = "domain";
+      var TYPE_ALL = "all";
+      var ROLE_OWNER = "owner";
+      var ROLE_MANAGER = "manager";
+      var ROLE_MEMBER = "member";
+
+
+      $(window).load(function(){
+        init();
+      });
+
+      function init() {
+        endProcess();
+        $('#email-submit').on('click', submitSearch);
+        $('#email-input').on('keypress', function(event) {
+          if (event.which == KEY_ENTER) {
+            event.preventDefault();
+            submitSearch();
+          }
+        });
+        google.script.run.withSuccessHandler(function(location) {
+          APP_URL = location;
+        }).getUrl();
+
+        google.script.url.getLocation(function(location) {
+          if(location.parameter.id) {
+            var id = location.parameter.id;
+            var type = location.parameter.type ? location.parameter.type : '';
+            $('#email-input').val(id);
+            search(id, type);
+          }
+        });
+
+        google.script.history.setChangeHandler(function (e) {
+          var state = e.state;
+          if(state === null) {
+            state = e.location.parameter;
+          }
+          var id = state.id;
+          var type = state.type ? state.type : '';
+          if(id == undefined) {
+            return;
+          }
+          $('#email-input').val(id);
+          search(id, type);
+    });
+      }
+
+      function submitSearch() {
+          var email = $('#email-input').val();
+          if(email.match(/^\s*$/g)) {
+            return false;
+          }
+          var params = {id:email};
+          google.script.history.push(params,params);
+          search(email);
+      }
+
+      function clickLinkSearch(e) {
+          var link = $(e.target);
+          var id = link.attr('data-id');
+          var type = link.attr('data-type');
+          if(e.ctrlKey||e.metaKey) {
+            return;  // Keep click to new window
+          }
+          e.preventDefault();
+          $('#email-input').val(id);
+          var params = {id:id,type:type};
+          google.script.history.push(params,params);
+          search(id, type);
+      }
+
+      function search(id, type){
+        trackStep('search', id);
+        startProcess();
+        google.script.run
+            .withSuccessHandler(searchResult)
+            .withFailureHandler(showScriptRequestError)
+            .search(id, type);
+      }
+
+      function searchResult(data) {
+        if(data.status) {
+          endProcess();
+          if(data.type == TYPE_USER) {
+            fillUserInfo(data.user);
+            fillUserGroups(data.groups)
+          }
+          else if(data.type == TYPE_GROUP) {
+            fillGroupInfo(data.group);
+            fillGroupMembers(data.members)
+          }
+        }
+        else {
+          showError(data, true);
+        }
+      }
+
+      function fillUserInfo(user) {
+        var infoBox = $('#user-info');
+        $('.name', infoBox).text(user.name.fullName);
+        $('.email', infoBox).text(user.email);
+        $('.aliases', infoBox).text(user.aliases ? user.aliases.join(', ') : '-');
+        infoBox.show();
+      }
+
+      function fillGroupInfo(group) {
+        var infoBox = $('#group-info');
+        $('.name', infoBox).text(group.name);
+        $('.email', infoBox).text(group.email);
+        $('.description', infoBox).text(group.description);
+        $('.aliases', infoBox).text(group.aliases ? group.aliases.join(', ') : '-');
+        $('.web-url', infoBox).attr('href', group.webUrl);
+        infoBox.show();
+      }
+
+      function fillUserGroups(groups) {
+        var listBox = $('#user-groups');
+        var list = $('.template-parent:first', listBox);
+        var template = $('.template-child', list);
+        groups.forEach(function(group){
+          var row = template.clone().removeClass('template-child');
+          row.addClass('type-group');
+          $('.icon', row).attr('title', "Type: group");
+          var link = $('<a>')
+              .attr({
+                  'href': buildUrl({id:group.email,type:'group'}),
+                  'data-id': group.email,
+                  'data-type': 'group',
+              })
+              .on('click', clickLinkSearch)
+              .text(group.email);
+          $('.email', row)
+              .attr('title', group.name + "\n" + group.description)
+              .append(link);
+          list.append(row);
+        });
+        listBox.show();
+      }
+
+      function fillGroupMembers(members) {
+        var listBox = $('#group-members');
+        var list = $('.template-parent:first', listBox);
+        var template = $('.template-child', list);
+        var allMembers = members.owner.concat(members.manager, members.member);
+        allMembers.forEach(function(member){
+          var row = template.clone().removeClass('template-child');
+          row.addClass('type-' + member.type);
+          row.addClass('role-' + member.role);
+          row.addClass('status-' + (member.status?'active':'disabled'));
+          $('.icon', row).attr('title', "Type: " + member.type);
+          $('.role span', row).text(member.role);
+          if(member.type == TYPE_DOMAIN) {
+            $('.email', row).text('All users in company');
+          }
+          else {
+            var link = $('<a>')
+              .attr({
+                  'href': buildUrl({id:member.email,type:member.type}),
+                  'data-id': member.email,
+                  'data-type': member.type,
+              })
+              .on('click', clickLinkSearch)
+              .text(member.email);
+            $('.email', row).append(link);
+          }
+          if(member.me) {
+            row.addClass('its-me');
+          }
+          list.append(row);
+        });
+        listBox.show();
+      }
+
+      function trackStep(action, label) {
+        dataLayer.push({
+          'event': 'track-step',
+          'action': action,
+          'label': label,
+        });
+      }
+
+      function startProcess() {
+        $("#loader-block").show();
+        $(".disableable").prop("disabled", true);
+        resetView();
+      }
+
+      function endProcess() {
+        $("#loader-block").hide();
+        $(".disableable").prop("disabled", false);
+        $(".autofocus").focus();
+      }
+
+      function resetView() {
+        $('#error').hide().text("");
+        $('.resetable-clean').text("");
+        $('.resetable-hide').hide();
+        $('.resetable-children .template-child').parent().children().not('.template-child').remove();
+      }
+
+      function showScriptRequestError(error) {
+        showError(error, false);
+      }
+
+      function showError(error, isRecoverable) {
+        var message = error.message ? error.message : error.error ? error.error : error;
+        isRecoverable = !!(isRecoverable || error.recoverable);
+        trackStep('error', ""+message);
+        $('#error').show().text(message);
+        endProcess();
+        if(!isRecoverable) {
+          $(".disableable, a, btn").prop("disabled", true);
+        }
+      }
+
+      function buildUrl(params) {
+        var queryParams = [];
+        for (var param in params) {
+          queryParams.push(encodeURIComponent(param) + "=" + encodeURIComponent(params[param]));
+        }
+        return APP_URL + '?' + queryParams.join('&');
+      }
+    </script>
+  </head>
+  <body>
+    <div class="logo"><img src="https://cdn.socialbakers.com/logo/32.png" alt="Socialbakers, a.s."></div>
+    <div id="page" class="container">
+      <div class="panel panel-default">
+        <div class="panel-body">
+
+      <h1>Google Groups Directory</h1>
+      <p>Email address (user or group):</p>
+      <div class="row">
+        <div class="col-sm-9"><input type="text" id="email-input" class="form-control disableable autofocus" autofocus></div>
+        <div class="col-sm-3"><button id="email-submit" class="btn btn-primary btn-block disableable"><i class="glyphicon glyphicon-search"></i> Search</button></div>
+      </div>
+      <div id="error" class="alert alert-danger hidden-on-start" role="alert"></div>
+      </div></div>
+      <div id="content">
+        <div id="loader-block">
+          <div class="loader" id="loader"></div>
+        </div>
+        <div class="panel panel-default info-box content-box resetable-hide hidden-on-start" id="user-info">
+          <div class="panel-heading"><h3 class="panel-title">About User</h3></div>
+          <div class="panel-body">
+            <div class="col-sm-4"><img src="https://cdn.socialbakers.com/itsupport/static/google-groups-directory-v2/user.svg" class="silhouette" width="100%"></div>
+            <div class="col-sm-8">
+              <table class="table table-default">
+                <tr>
+                  <th>Name:</th><td class="name resetable-clean"></td>
+                </tr>
+                <tr>
+                  <th>E-mail:</th><td class="email resetable-clean"></td>
+                </tr>
+                <tr>
+                  <th>Aliases:</th><td class="aliases resetable-clean"></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="panel panel-default info-box content-box resetable-hide hidden-on-start" id="group-info">
+          <div class="panel-heading"><h3 class="panel-title">About Group</h3></div>
+          <div class="panel-body">
+            <div class="col-sm-4">
+              <img src="https://cdn.socialbakers.com/itsupport/static/google-groups-directory-v2/group.svg" class="silhouette" width="100%">
+              <p class="ask"><a href="#" class="web-url btn btn-default btn-sm" target="_blank"><i class="glyphicon glyphicon-log-in"></i> Go to the Group</a><br><small>only for members</small></p>
+            </div>
+            <div class="col-sm-8">
+              <table class="table table-condensed">
+                <tr>
+                  <th>Name:</th><td class="name resetable-clean"></td>
+                </tr>
+                <tr>
+                  <th>Description:</th><td class="description resetable-clean"></td>
+                </tr>
+                <tr>
+                  <th>E-mail:</th><td class="email resetable-clean"></td>
+                </tr>
+                <tr>
+                  <th>Aliases:</th><td class="aliases resetable-clean"></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="panel panel-default list-box content-box resetable-hide hidden-on-start" id="user-groups">
+          <div class="panel-heading"><h3 class="panel-title">Groups</h3></div>
+          <table class="table table-hover resetable-children template-parent">
+           <tr class="template-child">
+             <td class="icon"><span></span></td>
+             <td class="email"></td>
+           </tr>
+          </table>
+        </div>
+        <div class="panel panel-default list-box content-box resetable-hide hidden-on-start" id="group-members">
+          <div class="panel-heading"><h3 class="panel-title">Group members</h3></div>
+          <table class="table table-hover resetable-children template-parent">
+           <tr class="template-child">
+             <td class="icon"><span></span></td>
+             <td class="role"><span></span></td>
+             <td class="email"></td>
+           </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      If this tool doesn't work correctly, please contact
+      <a href="mailto:itsupport@socialbakers.com?subject=Google+Groups+Directory+Viewer+v2+doesn't+work&amp;body=This+tool:+http://sbks.com/groups" target="_top">
+          IT Support</a>
+    </div>
+  </body>
+</html>
