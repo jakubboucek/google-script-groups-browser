@@ -155,6 +155,7 @@ function getUserInfo(userKey) {
     email: user.primaryEmail,
     photo: user.thumbnailPhotoUrl,
     aliases: user.aliases,
+    active: ! user.suspended,
   };
 }
 

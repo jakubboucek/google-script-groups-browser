@@ -41,6 +41,10 @@
       .ask {
         text-align: center;
       }
+      .note {
+        display: block;
+        color: gray;
+      }
       .footer {
         font-size: small;
         text-align: center;
@@ -231,6 +235,9 @@
         $('.name', infoBox).text(user.name.fullName);
         $('.email', infoBox).text(user.email);
         $('.aliases', infoBox).text(user.aliases ? user.aliases.join(', ') : '-');
+        if(! user.active) {
+          $('.name', infoBox).append('<small class="note"><i class="glyphicon glyphicon-info-sign text-danger"></i> Deactivated user</small>');
+        }
         infoBox.show();
       }
 
