@@ -1,5 +1,5 @@
-var COMPANY_NAME = "Socialbakers";
-var COMPANY_GSUITE_DOMAIN = "socialbakers.com";
+var COMPANY_NAME = "Redbit";
+var COMPANY_GSUITE_DOMAIN = "redbit.cz";
 
 var TYPE_ALL = "all";
 var TYPE_USER = "user";
@@ -22,7 +22,7 @@ var ROLE_TRANSLATE = {
 var WEB_ARCHIV_URL = "https://groups.google.com/a/" + COMPANY_GSUITE_DOMAIN + "/group/%s";
 
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('UI')
+  return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle(COMPANY_NAME + ' Google Groups Directory')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
